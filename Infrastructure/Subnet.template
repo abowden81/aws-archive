@@ -1,0 +1,26 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Create BSL and Web Stack from AMI",
+    "Parameters": {
+        "AppSubnetA": {
+            "Type": "AWS::EC2::Subnet::Id",
+            "Default": "subnet-f6b63c93",
+            "ConstraintDescription": ""
+        },
+        "AppSubnetB": {
+            "Type": "AWS::EC2::Subnet::Id",
+            "Default": "subnet-45f44732",
+            "ConstraintDescription": ""
+        },
+        "DataSubnetA": {
+            "Type": "AWS::EC2::Subnet::Id",
+            "Default": "subnet-f1b63c94",
+            "ConstraintDescription": ""
+        },
+        "DataSubnetB": {
+            "Type": "AWS::EC2::Subnet::Id",
+            "Default": "subnet-41f44736",
+            "ConstraintDescription": ""
+        }
+    }
+}

@@ -1,0 +1,2368 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Create BSL and Web Stack from AMI",
+    "Parameters": {
+        "DNSPrivate": {
+            "Description": "The Internal domain suffix",
+            "Type": "String",
+            "ConstraintDescription": "Must be a hosted DNS zone"
+        },
+        "DNSPublic": {
+            "Description": "The public domain suffix",
+            "Type": "String",
+            "ConstraintDescription": "Must be a hosted DNS zone"
+        }
+    },
+    "Resources": {
+        "BSLDNSPUBLIC": {
+            "Type": "AWS::Route53::RecordSetGroup",
+            "Properties": {
+                "HostedZoneName": {
+                    "Ref": "DNSPublic"
+                },
+                "RecordSets": [
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "admin",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPublic"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "A",
+                        "AliasTarget": {
+                            "HostedZoneId": {
+                                "Fn::GetAtt": [
+                                    "adminelb",
+                                    "CanonicalHostedZoneNameID"
+                                ]
+                            },
+                            "DNSName": {
+                                "Fn::GetAtt": [
+                                    "adminelb",
+                                    "CanonicalHostedZoneName"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "au",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPublic"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "A",
+                        "AliasTarget": {
+                            "HostedZoneId": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneNameID"
+                                ]
+                            },
+                            "DNSName": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneName"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "api",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPublic"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "A",
+                        "AliasTarget": {
+                            "HostedZoneId": {
+                                "Fn::GetAtt": [
+                                    "BslElb",
+                                    "CanonicalHostedZoneNameID"
+                                ]
+                            },
+                            "DNSName": {
+                                "Fn::GetAtt": [
+                                    "BslElb",
+                                    "CanonicalHostedZoneName"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "bslmonitor",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPublic"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "A",
+                        "AliasTarget": {
+                            "HostedZoneId": {
+                                "Fn::GetAtt": [
+                                    "BslElb",
+                                    "CanonicalHostedZoneNameID"
+                                ]
+                            },
+                            "DNSName": {
+                                "Fn::GetAtt": [
+                                    "BslElb",
+                                    "CanonicalHostedZoneName"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "apps",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPublic"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "A",
+                        "AliasTarget": {
+                            "HostedZoneId": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneNameID"
+                                ]
+                            },
+                            "DNSName": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneName"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "canadianforex",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPublic"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "A",
+                        "AliasTarget": {
+                            "HostedZoneId": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneNameID"
+                                ]
+                            },
+                            "DNSName": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneName"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "chartflow",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPublic"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "A",
+                        "AliasTarget": {
+                            "HostedZoneId": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneNameID"
+                                ]
+                            },
+                            "DNSName": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneName"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "clearfx",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPublic"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "A",
+                        "AliasTarget": {
+                            "HostedZoneId": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneNameID"
+                                ]
+                            },
+                            "DNSName": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneName"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "clearfx2",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPublic"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "A",
+                        "AliasTarget": {
+                            "HostedZoneId": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneNameID"
+                                ]
+                            },
+                            "DNSName": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneName"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "dep",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPublic"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "A",
+                        "AliasTarget": {
+                            "HostedZoneId": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneNameID"
+                                ]
+                            },
+                            "DNSName": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneName"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "forexe",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPublic"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "A",
+                        "AliasTarget": {
+                            "HostedZoneId": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneNameID"
+                                ]
+                            },
+                            "DNSName": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneName"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "fxcontent",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPublic"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "A",
+                        "AliasTarget": {
+                            "HostedZoneId": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneNameID"
+                                ]
+                            },
+                            "DNSName": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneName"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "fxsnet",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPublic"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "A",
+                        "AliasTarget": {
+                            "HostedZoneId": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneNameID"
+                                ]
+                            },
+                            "DNSName": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneName"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "fxstreet",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPublic"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "A",
+                        "AliasTarget": {
+                            "HostedZoneId": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneNameID"
+                                ]
+                            },
+                            "DNSName": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneName"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "globalpayments-au",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPublic"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "A",
+                        "AliasTarget": {
+                            "HostedZoneId": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneNameID"
+                                ]
+                            },
+                            "DNSName": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneName"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "globalpayments-ca",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPublic"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "A",
+                        "AliasTarget": {
+                            "HostedZoneId": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneNameID"
+                                ]
+                            },
+                            "DNSName": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneName"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "goconvert",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPublic"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "A",
+                        "AliasTarget": {
+                            "HostedZoneId": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneNameID"
+                                ]
+                            },
+                            "DNSName": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneName"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "ifx",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPublic"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "A",
+                        "AliasTarget": {
+                            "HostedZoneId": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneNameID"
+                                ]
+                            },
+                            "DNSName": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneName"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "imt-au",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPublic"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "A",
+                        "AliasTarget": {
+                            "HostedZoneId": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneNameID"
+                                ]
+                            },
+                            "DNSName": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneName"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "imt-ca",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPublic"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "A",
+                        "AliasTarget": {
+                            "HostedZoneId": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneNameID"
+                                ]
+                            },
+                            "DNSName": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneName"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "ingdirect",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPublic"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "A",
+                        "AliasTarget": {
+                            "HostedZoneId": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneNameID"
+                                ]
+                            },
+                            "DNSName": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneName"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "internationalmoneytransfers-au",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPublic"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "A",
+                        "AliasTarget": {
+                            "HostedZoneId": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneNameID"
+                                ]
+                            },
+                            "DNSName": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneName"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "internationalmoneytransfers-ca",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPublic"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "A",
+                        "AliasTarget": {
+                            "HostedZoneId": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneNameID"
+                                ]
+                            },
+                            "DNSName": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneName"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "internationalmoneytransfers-nz",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPublic"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "A",
+                        "AliasTarget": {
+                            "HostedZoneId": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneNameID"
+                                ]
+                            },
+                            "DNSName": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneName"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "moneygram-au",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPublic"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "A",
+                        "AliasTarget": {
+                            "HostedZoneId": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneNameID"
+                                ]
+                            },
+                            "DNSName": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneName"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "moneygram-nz",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPublic"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "A",
+                        "AliasTarget": {
+                            "HostedZoneId": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneNameID"
+                                ]
+                            },
+                            "DNSName": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneName"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "moneygram-us",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPublic"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "A",
+                        "AliasTarget": {
+                            "HostedZoneId": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneNameID"
+                                ]
+                            },
+                            "DNSName": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneName"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "moneygram",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPublic"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "A",
+                        "AliasTarget": {
+                            "HostedZoneId": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneNameID"
+                                ]
+                            },
+                            "DNSName": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneName"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "news",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPublic"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "A",
+                        "AliasTarget": {
+                            "HostedZoneId": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneNameID"
+                                ]
+                            },
+                            "DNSName": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneName"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "nzforex",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPublic"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "A",
+                        "AliasTarget": {
+                            "HostedZoneId": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneNameID"
+                                ]
+                            },
+                            "DNSName": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneName"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "ozforex",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPublic"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "A",
+                        "AliasTarget": {
+                            "HostedZoneId": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneNameID"
+                                ]
+                            },
+                            "DNSName": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneName"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "secure",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPublic"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "A",
+                        "AliasTarget": {
+                            "HostedZoneId": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneNameID"
+                                ]
+                            },
+                            "DNSName": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneName"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "secure-ls",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPublic"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "A",
+                        "AliasTarget": {
+                            "HostedZoneId": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneNameID"
+                                ]
+                            },
+                            "DNSName": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneName"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "services",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPublic"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "A",
+                        "AliasTarget": {
+                            "HostedZoneId": {
+                                "Fn::GetAtt": [
+                                    "serviceselb",
+                                    "CanonicalHostedZoneNameID"
+                                ]
+                            },
+                            "DNSName": {
+                                "Fn::GetAtt": [
+                                    "serviceselb",
+                                    "CanonicalHostedZoneName"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "singforex",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPublic"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "A",
+                        "AliasTarget": {
+                            "HostedZoneId": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneNameID"
+                                ]
+                            },
+                            "DNSName": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneName"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "tranzfers",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPublic"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "A",
+                        "AliasTarget": {
+                            "HostedZoneId": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneNameID"
+                                ]
+                            },
+                            "DNSName": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneName"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "travelex-au",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPublic"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "A",
+                        "AliasTarget": {
+                            "HostedZoneId": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneNameID"
+                                ]
+                            },
+                            "DNSName": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneName"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "travelex-ca",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPublic"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "A",
+                        "AliasTarget": {
+                            "HostedZoneId": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneNameID"
+                                ]
+                            },
+                            "DNSName": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneName"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "travelex-nz",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPublic"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "A",
+                        "AliasTarget": {
+                            "HostedZoneId": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneNameID"
+                                ]
+                            },
+                            "DNSName": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneName"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "travelex-uk",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPublic"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "A",
+                        "AliasTarget": {
+                            "HostedZoneId": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneNameID"
+                                ]
+                            },
+                            "DNSName": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneName"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "travelex-us",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPublic"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "A",
+                        "AliasTarget": {
+                            "HostedZoneId": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneNameID"
+                                ]
+                            },
+                            "DNSName": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneName"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "ukforex",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPublic"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "A",
+                        "AliasTarget": {
+                            "HostedZoneId": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneNameID"
+                                ]
+                            },
+                            "DNSName": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneName"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "usforex",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPublic"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "A",
+                        "AliasTarget": {
+                            "HostedZoneId": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneNameID"
+                                ]
+                            },
+                            "DNSName": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneName"
+                                ]
+                            }
+                        }
+                    },
+					{
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "us",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPublic"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "A",
+                        "AliasTarget": {
+                            "HostedZoneId": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneNameID"
+                                ]
+                            },
+                            "DNSName": {
+                                "Fn::GetAtt": [
+                                    "WebElb",
+                                    "CanonicalHostedZoneName"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "www",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPublic"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "A",
+                        "AliasTarget": {
+                            "HostedZoneId": {
+                                "Fn::GetAtt": [
+                                    "WwwElb",
+                                    "CanonicalHostedZoneNameID"
+                                ]
+                            },
+                            "DNSName": {
+                                "Fn::GetAtt": [
+                                    "WwwElb",
+                                    "CanonicalHostedZoneName"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "etailing",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPublic"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "A",
+                        "AliasTarget": {
+                            "HostedZoneId": {
+                                "Fn::GetAtt": [
+                                    "WwwElb",
+                                    "CanonicalHostedZoneNameID"
+                                ]
+                            },
+                            "DNSName": {
+                                "Fn::GetAtt": [
+                                    "WwwElb",
+                                    "CanonicalHostedZoneName"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "developer",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPublic"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "A",
+                        "AliasTarget": {
+                            "HostedZoneId": {
+                                "Fn::GetAtt": [
+                                    "WwwElb",
+                                    "CanonicalHostedZoneNameID"
+                                ]
+                            },
+                            "DNSName": {
+                                "Fn::GetAtt": [
+                                    "WwwElb",
+                                    "CanonicalHostedZoneName"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "sitecore",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPublic"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "A",
+                        "AliasTarget": {
+                            "HostedZoneId": {
+                                "Fn::GetAtt": [
+                                    "WwwcmElb",
+                                    "CanonicalHostedZoneNameID"
+                                ]
+                            },
+                            "DNSName": {
+                                "Fn::GetAtt": [
+                                    "WwwcmElb",
+                                    "CanonicalHostedZoneName"
+                                ]
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        "BSLDNSPRIVATE": {
+            "Type": "AWS::Route53::RecordSetGroup",
+            "Properties": {
+                "HostedZoneName": {
+                    "Ref": "DNSPrivate"
+                },
+                "RecordSets": [
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "mongo-0",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPrivate"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "A",
+                        "TTL": "300",
+                        "ResourceRecords": [
+                            {
+                                "Fn::GetAtt": [
+                                    "MongoServer0",
+                                    "PrivateIp"
+                                ]
+                            }
+                        ]
+                    },
+					{
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "sirouter",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPrivate"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "A",
+                        "TTL": "300",
+                        "ResourceRecords": [
+                            "10.129.121.200"
+                        ]
+                    },
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "file",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPrivate"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "A",
+                        "TTL": "300",
+                        "ResourceRecords": [
+                            {
+                                "Fn::GetAtt": [
+                                    "fileserver",
+                                    "PrivateIp"
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "redis-fxsnet",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPrivate"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "CNAME",
+                        "TTL": "300",
+                        "ResourceRecords": [
+                            "fxsnet.9u7cfr.ng.0001.apse2.cache.amazonaws.com"
+                        ]
+                    },
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "mongo-01",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPrivate"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "A",
+                        "TTL": "300",
+                        "ResourceRecords": [
+                            {
+                                "Fn::GetAtt": [
+                                    "MongoServer1",
+                                    "PrivateIp"
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "mongo-1",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPrivate"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "A",
+                        "TTL": "300",
+                        "ResourceRecords": [
+                            {
+                                "Fn::GetAtt": [
+                                    "MongoServer1",
+                                    "PrivateIp"
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "mongo-02",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPrivate"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "A",
+                        "TTL": "300",
+                        "ResourceRecords": [
+                            {
+                                "Fn::GetAtt": [
+                                    "MongoServer2",
+                                    "PrivateIp"
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "mongo-2",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPrivate"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "A",
+                        "TTL": "300",
+                        "ResourceRecords": [
+                            {
+                                "Fn::GetAtt": [
+                                    "MongoServer2",
+                                    "PrivateIp"
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "mongodb",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPrivate"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "A",
+                        "TTL": "300",
+                        "ResourceRecords": [
+                            {
+                                "Fn::GetAtt": [
+                                    "MongoServer1",
+                                    "PrivateIp"
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "rabbitmq",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPrivate"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "A",
+                        "TTL": "300",
+                        "ResourceRecords": [
+                            {
+                                "Fn::GetAtt": [
+                                    "RabbitServer0",
+                                    "PrivateIp"
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "tasks",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPrivate"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "A",
+                        "TTL": "300",
+                        "ResourceRecords": [
+                            {
+                                "Fn::GetAtt": [
+                                    "TaskServer",
+                                    "PrivateIp"
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "redis",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPrivate"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "CNAME",
+                        "TTL": "10",
+                        "ResourceRecords": [
+                            {
+                                "Fn::GetAtt": [
+                                    "ElastiCacheCluster",
+                                    "RedisEndpoint.Address"
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "worker",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPrivate"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "A",
+                        "TTL": "300",
+                        "ResourceRecords": [
+                            {
+                                "Fn::GetAtt": [
+                                    "AppServer1",
+                                    "PrivateIp"
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "app1",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPrivate"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "A",
+                        "TTL": "300",
+                        "ResourceRecords": [
+                            {
+                                "Fn::GetAtt": [
+                                    "AppServer1",
+                                    "PrivateIp"
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "web1",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPrivate"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "A",
+                        "TTL": "300",
+                        "ResourceRecords": [
+                            {
+                                "Fn::GetAtt": [
+                                    "WebServer1",
+                                    "PrivateIp"
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "admin1",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPrivate"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "A",
+                        "TTL": "300",
+                        "ResourceRecords": [
+                            {
+                                "Fn::GetAtt": [
+                                    "adminserver1",
+                                    "PrivateIp"
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "service1",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPrivate"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "A",
+                        "TTL": "300",
+                        "ResourceRecords": [
+                            {
+                                "Fn::GetAtt": [
+                                    "servicesserver1",
+                                    "PrivateIp"
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "cd1-www",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPrivate"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "A",
+                        "TTL": "300",
+                        "ResourceRecords": [
+                            {
+                                "Fn::GetAtt": [
+                                    "WwwcdServer1",
+                                    "PrivateIp"
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "cm1-www",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPrivate"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "A",
+                        "TTL": "300",
+                        "ResourceRecords": [
+                            {
+                                "Fn::GetAtt": [
+                                    "WwwcmServer1",
+                                    "PrivateIp"
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "prc-www",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPrivate"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "A",
+                        "TTL": "300",
+                        "ResourceRecords": [
+                            {
+                                "Fn::GetAtt": [
+                                    "wwwprc",
+                                    "PrivateIp"
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "mongo1-www",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPrivate"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "A",
+                        "TTL": "300",
+                        "ResourceRecords": [
+                            {
+                                "Fn::GetAtt": [
+                                    "WwwMongoServer1",
+                                    "PrivateIp"
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "mongo2-www",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPrivate"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "A",
+                        "TTL": "300",
+                        "ResourceRecords": [
+                            {
+                                "Fn::GetAtt": [
+                                    "WwwMongoServer2",
+                                    "PrivateIp"
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "mongo3-www",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPrivate"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "A",
+                        "TTL": "300",
+                        "ResourceRecords": [
+                            {
+                                "Fn::GetAtt": [
+                                    "WwwMongoServer3",
+                                    "PrivateIp"
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "ofx-avmh-auprdwwwmdb-01",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPrivate"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "A",
+                        "TTL": "300",
+                        "ResourceRecords": [
+                            {
+                                "Fn::GetAtt": [
+                                    "WwwMongoServer1",
+                                    "PrivateIp"
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "ofx-avmh-auprdwwwmdb-02",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPrivate"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "A",
+                        "TTL": "300",
+                        "ResourceRecords": [
+                            {
+                                "Fn::GetAtt": [
+                                    "WwwMongoServer2",
+                                    "PrivateIp"
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "ofx-dvmh-auprdwwwmdbwit-01",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPrivate"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "A",
+                        "TTL": "300",
+                        "ResourceRecords": [
+                            {
+                                "Fn::GetAtt": [
+                                    "WwwMongoServer3",
+                                    "PrivateIp"
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "sql-www",
+                                    ".",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "DNSPrivate"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "A",
+                        "TTL": "300",
+                        "ResourceRecords": [
+                            {
+                                "Fn::GetAtt": [
+                                    "WwwsqlServer",
+                                    "PrivateIp"
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    }
+}

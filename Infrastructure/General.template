@@ -1,0 +1,78 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Create BSL and Web Stack from AMI",
+    "Parameters": {
+        "InstanceType": {
+            "Description": "Environment Size",
+            "Type": "String",
+            "Default": "t2.medium",
+            "AllowedValues": [
+                "t2.small",
+                "t2.medium",
+                "t2.large",
+                "m3.medium",
+                "m4.large",
+                "m4.xlarge",
+                "m4.2xlarge",
+                "m4.4xlarge"
+            ],
+            "ConstraintDescription": "must be a valid EC2 instance type"
+        },
+		"DBInstanceType": {
+			"Description": "DB Instance Size",
+            "Type": "String",
+            "Default": "m3.medium",
+            "AllowedValues": [
+                "m3.medium",
+                "m3.large"
+            ],
+            "ConstraintDescription": "must be a valid EC2 instance type"
+        },
+        "ClusterNodeType": {
+            "Description": "The compute and memory capacity of the nodes in the Redis Cluster",
+            "Type": "String",
+            "Default": "cache.t2.medium",
+            "AllowedValues": [
+                "cache.m4.xlarge",
+                "cache.m4.2xlarge",
+                "cache.m4.4xlarge",
+                "cache.t2.micro",
+                "cache.t2.small",
+                "cache.t2.medium",
+                "cache.m3.medium",
+                "cache.m3.large",
+                "cache.m3.xlarge",
+                "cache.m3.2xlarge",
+                "cache.r3.large",
+                "cache.r3.xlarge",
+                "cache.r3.2xlarge",
+                "cache.r3.4xlarge"
+            ],
+            "ConstraintDescription": "must select a valid Cache Node type."
+        },
+        "DefaultVPC": {
+            "Description": "The Default VPC",
+            "Type": "String",
+            "Default": "vpc-bac369df",
+            "ConstraintDescription": "Must be an existing VPC"
+        },
+        "KeyName": {
+            "Description": "The EC2 pair for SSH access",
+            "Type": "AWS::EC2::KeyPair::KeyName",
+            "Default": "cf-dev",
+            "ConstraintDescription": "Must be an existing key pair"
+        },
+        "EnvironmentId": {
+            "Description": "Environment ID",
+            "Type": "String"
+        },
+        "EnvironmentGroup": {
+            "Description": "Environment Group",
+            "Type": "String"
+        },
+        "BuildNumber": {
+            "Description": "Bamboo build number",
+            "Type": "String"
+        }
+    }
+}

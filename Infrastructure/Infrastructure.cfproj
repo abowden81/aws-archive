@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{3f3d1db3-8971-40be-9bd2-502ba3d53558}</ProjectGuid>
+    <AssemblyName>InfrastructureTemplate</AssemblyName>
+    <Name>Infrastructure</Name>
+    <RootNamespace>InfrastructureTemplate</RootNamespace>
+  </PropertyGroup>
+  <PropertyGroup>
+    <!-- Experimental LocalAppData -->
+    <CloudFormationPath Condition=" '$(CloudFormationPath)' == '' AND Exists('$(LocalAppData)\Microsoft\VisualStudio\10.0Exp\Extensions\Amazon Web Services\AWSToolkit.VS2010.Core\0.5.0.0\cloudformation.targets')">$(LocalAppData)\Microsoft\VisualStudio\10.0Exp\Extensions\Amazon Web Services\AWSToolkit.VS2010.Core\0.5.0.0</CloudFormationPath>
+    <!-- Integrated Shell -->
+    <CloudFormationPath Condition=" '$(CloudFormationPath)' == '' AND Exists('$(MSBuildExtensionsPath)\Amazon Web Services LLC\AWSToolkit.VS2010\cloudformation.targets')">$(MSBuildExtensionsPath)\Amazon Web Services LLC\AWSToolkit.VS2010</CloudFormationPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="certificate.template">
+      <SubType>Content</SubType>
+    </Compile>
+    <Compile Include="dmz.template">
+      <SubType>Content</SubType>
+    </Compile>
+    <Compile Include="dns.template">
+      <SubType>Content</SubType>
+    </Compile>
+    <Compile Include="General.template">
+      <SubType>Content</SubType>
+    </Compile>
+    <Compile Include="security.template">
+      <SubType>Content</SubType>
+    </Compile>
+    <Compile Include="Subnet.template">
+      <SubType>Content</SubType>
+    </Compile>
+  </ItemGroup>
+  <Import Project="$(CloudFormationPath)\cloudformation.targets" />
+</Project>

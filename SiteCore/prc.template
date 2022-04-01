@@ -1,0 +1,238 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Create BSL and Web Stack from AMI",
+    "Parameters": {
+        "AMIwwwprc": {
+            "Description": "The image for Sitecore Processing Server",
+            "Type": "String",
+            "Default": "ami-8696a6e5",
+            "ConstraintDescription": "Must be a valid AMI"
+        }
+    },
+    "Resources": {
+        "wwwprc": {
+            "Type": "AWS::EC2::Instance",
+            "Metadata": {
+                "AWS::CloudFormation::Init": {
+                    "configSets": {
+                        "default": [
+                            "init-config",
+                            "octopus-config",
+                            "transformation-config"
+                        ]
+                    },
+                    "init-config": {
+                        "packages": {},
+                        "groups": {},
+                        "users": {},
+                        "sources": {},
+                        "files": {
+                            "c:\\cfn\\cfn-hup.conf": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "[main]\n",
+                                            "stack=",
+                                            {
+                                                "Ref": "AWS::StackId"
+                                            },
+                                            "\n",
+                                            "region=",
+                                            {
+                                                "Ref": "AWS::Region"
+                                            },
+                                            "\n"
+                                        ]
+                                    ]
+                                }
+                            },
+                            "c:\\cfn\\hooks.d\\cfn-auto-reloader.conf": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "[cfn-auto-reloader-hook]\n",
+                                            "triggers=post.update\n",
+                                            "path=Resources.wwwprc.Metadata.AWS::CloudFormation::Init\n",
+                                            "action=cfn-init.exe -v -s ",
+                                            {
+                                                "Ref": "AWS::StackId"
+                                            },
+                                            " -r wwwprc",
+                                            " --region ",
+                                            {
+                                                "Ref": "AWS::Region"
+                                            },
+                                            "\n"
+                                        ]
+                                    ]
+                                }
+                            }
+                        },
+                        "commands": {},
+                        "services": {
+                            "windows": {
+                                "cfn-hup": {
+                                    "enabled": "true",
+                                    "ensureRunning": "true",
+                                    "files": [
+                                        "c:\\cfn\\cfn-hup.conf",
+                                        "c:\\cfn\\hooks.d\\cfn-auto-reloader.conf"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "octopus-config": {
+                        "packages": {},
+                        "groups": {},
+                        "users": {},
+                        "sources": {},
+                        "files": {
+                            "D:\\Installers\\Octopus.Tentacle.msi": {
+                                "source": "https://download.octopusdeploy.com/octopus/Octopus.Tentacle.3.5.1-x64.msi"
+                            },
+                            "D:\\install-tenacle.ps1": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "#install-tenacle.ps1"
+                                        ]
+                                    ]
+                                }
+                            }
+                        },
+                        "commands": {
+                            "install-tentacle": {
+                                "command": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "powershell.exe -executionpolicy unrestricted -command D:\\install-tenacle.ps1 'sitecore-processing' 'prc-www' ",
+                                            {
+                                                "Ref": "EnvironmentId"
+                                            },
+                                            ".",
+                                            {
+                                                "Ref": "EnvironmentGroup"
+                                            }
+                                        ]
+                                    ]
+                                }
+                            }
+                        },
+                        "services": {}
+                    },
+                    "transformation-config": {
+                        "packages": {},
+                        "groups": {},
+                        "users": {},
+                        "sources": {},
+                        "files": {
+                            "D:\\transformation.ps1": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "#transformation.ps1"
+                                        ]
+                                    ]
+                                }
+                            }
+                        },
+                        "commands": {
+                            "transformation": {
+                                "command": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "powershell.exe -executionpolicy unrestricted -command D:\\transformation.ps1 00.dev ",
+                                            {
+                                                "Ref": "EnvironmentId"
+                                            },
+                                            ".",
+                                            {
+                                                "Ref": "EnvironmentGroup"
+                                            }
+                                        ]
+                                    ]
+                                }
+                            }
+                        },
+                        "services": {}
+                    }
+                }
+            },
+            "Properties": {
+                "InstanceType": {
+                    "Ref": "AppInstanceType"
+                },
+                "ImageId": {
+                    "Ref": "AMIwwwprc"
+                },
+                "KeyName": {
+                    "Ref": "KeyName"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join": [
+                                ".",
+                                [
+                                    "prc-www",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    {
+                                        "Ref": "DNSPrivate"
+                                    }
+                                ]
+                            ]
+                        }
+                    }
+                ],
+                "NetworkInterfaces": [
+                    {
+                        "AssociatePublicIpAddress": "true",
+                        "DeviceIndex": "0",
+                        "SubnetId": {
+                            "Ref": "DmzSubnetB"
+                        },
+                        "GroupSet": [
+                            {
+                                "Ref": "SGwwwdmz"
+                            },
+                            "sg-8ef78feb",
+                            "sg-86f78fe3",
+                            "sg-8cf78fe9"
+                        ]
+                    }
+                ],
+                "UserData": {
+                    "Fn::Base64": {
+                        "Fn::Join": [
+                            "",
+                            [
+                                "<script>\n",
+                                "cfn-init.exe -v -s ",
+                                {
+                                    "Ref": "AWS::StackId"
+                                },
+                                " -r wwwprc",
+                                " --region ",
+                                {
+                                    "Ref": "AWS::Region"
+                                },
+                                "\n",
+                                "</script>"
+                            ]
+                        ]
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,242 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Create BSL and Web Stack from AMI",
+    "Resources": {
+        "SGbslapp": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "GroupDescription": "BSL DMZ to APP",
+                "VpcId": {
+                    "Ref": "DefaultVPC"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "SG",
+                                    {
+                                        "Ref": "EnvironmentGroup"
+                                    },
+                                    "-",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    "-",
+                                    "BSL",
+                                    "-",
+                                    "APP"
+                                ]
+                            ]
+                        }
+                    }
+                ],
+                "SecurityGroupIngress": [
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "0",
+                        "ToPort": "65535",
+                        "SourceSecurityGroupId": {
+                            "Ref": "SGbsldmz"
+                        }
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "443",
+                        "ToPort": "443",
+                        "SourceSecurityGroupId": {
+                            "Ref": "SGbsldmz"
+                        }
+                    }
+                ]
+            }
+        },
+        "SGbsldata": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "GroupDescription": "Traffic from DMZ and APP ",
+                "VpcId": {
+                    "Ref": "DefaultVPC"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "SG",
+                                    {
+                                        "Ref": "EnvironmentGroup"
+                                    },
+                                    "-",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    "-",
+                                    "BSL",
+                                    "-",
+                                    "DATA"
+                                ]
+                            ]
+                        }
+                    }
+                ],
+                "SecurityGroupIngress": [
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "1433",
+                        "ToPort": "1433",
+                        "SourceSecurityGroupId": {
+                            "Ref": "SGbsldmz"
+                        }
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "1433",
+                        "ToPort": "1433",
+                        "SourceSecurityGroupId": {
+                            "Ref": "SGbslapp"
+                        }
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "27017",
+                        "ToPort": "27018",
+                        "SourceSecurityGroupId": {
+                            "Ref": "SGbsldmz"
+                        }
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "27017",
+                        "ToPort": "27018",
+                        "SourceSecurityGroupId": {
+                            "Ref": "SGbslapp"
+                        }
+                    }
+                ]
+            }
+        },
+        "SGwwwapp": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "GroupDescription": "WWW DMZ to APP",
+                "VpcId": {
+                    "Ref": "DefaultVPC"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "SG",
+                                    {
+                                        "Ref": "EnvironmentGroup"
+                                    },
+                                    "-",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    "-",
+                                    "WWW",
+                                    "-",
+                                    "APP"
+                                ]
+                            ]
+                        }
+                    }
+                ],
+                "SecurityGroupIngress": [
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "0",
+                        "ToPort": "65535",
+                        "SourceSecurityGroupId": {
+                            "Ref": "SGwwwdmz"
+                        }
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "443",
+                        "ToPort": "443",
+                        "SourceSecurityGroupId": {
+                            "Ref": "SGwwwdmz"
+                        }
+                    }
+                ]
+            }
+        },
+        "SGwwwdata": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "GroupDescription": "Traffic from DMZ and APP ",
+                "VpcId": {
+                    "Ref": "DefaultVPC"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "SG",
+                                    {
+                                        "Ref": "EnvironmentGroup"
+                                    },
+                                    "-",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    "-",
+                                    "WWW",
+                                    "-",
+                                    "DATA"
+                                ]
+                            ]
+                        }
+                    }
+                ],
+                "SecurityGroupIngress": [
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "1433",
+                        "ToPort": "1433",
+                        "SourceSecurityGroupId": {
+                            "Ref": "SGwwwdmz"
+                        }
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "1433",
+                        "ToPort": "1433",
+                        "SourceSecurityGroupId": {
+                            "Ref": "SGwwwapp"
+                        }
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "27017",
+                        "ToPort": "27018",
+                        "SourceSecurityGroupId": {
+                            "Ref": "SGwwwdmz"
+                        }
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "27017",
+                        "ToPort": "27018",
+                        "SourceSecurityGroupId": {
+                            "Ref": "SGwwwapp"
+                        }
+                    }
+                ]
+            }
+        }
+    }
+}

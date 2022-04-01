@@ -1,0 +1,43 @@
+{
+    "Parameters": {},
+    "Resources": {
+	"ParameterGroup": {
+          "Type": "AWS::ElastiCache::ParameterGroup",
+          "Properties": {
+            "CacheParameterGroupFamily":  "redis3.2",
+            "Description": "Redis Parameter Group for bsl"
+    }
+        },
+        "ElastiCacheCluster": {
+          "Type": "AWS::ElastiCache::CacheCluster",
+          "Properties": {
+            "AutoMinorVersionUpgrade":    {"Ref" : "AWS::NoValue"},
+            "AZMode"                     : "single-az",
+            "CacheNodeType"    :"cache.t2.micro",
+            "CacheParameterGroupName"    :{"Ref" : "ParameterGroup"},
+            "CacheSecurityGroupNames"    : {"Ref" : "AWS::NoValue"},
+            "CacheSubnetGroupName"       : {"Ref": "ElastiCacheSubnetGroup"},
+            "ClusterName"                : {"Ref" : "AWS::NoValue"},
+            "Engine"              : "redis",
+            "EngineVersion"     : {"Ref" : "AWS::NoValue"},
+            "NumCacheNodes"              : 1,
+            "Port"                 :          {"Ref" : "AWS::NoValue"},
+            "PreferredAvailabilityZone"  :  {"Ref" : "AWS::NoValue"},
+            "PreferredMaintenanceWindow" : {"Ref" : "AWS::NoValue"},
+            "Tags"                       : [],
+            "VpcSecurityGroupIds"        : ["sg-86f78fe3"]
+          }
+        },
+        "ElastiCacheSubnetGroup": {
+            "Type": "AWS::ElastiCache::SubnetGroup",
+            "Properties": {
+                "Description": "Cache Subnet Group",
+                "SubnetIds": [
+                    {
+                        "Ref": "AppSubnetA"
+                    }
+                ]
+            }
+        }
+    }
+}

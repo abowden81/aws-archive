@@ -1,0 +1,622 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Create BSL and Web Stack from AMI",
+    "Parameters": {
+        "AMIwwwmdb": {
+            "Description": "The image for Sitecore Mongo Server",
+            "Type": "String",
+            "Default": "ami-dc361ebf",
+            "ConstraintDescription": "Must be a valid AMI"
+        }
+    },
+    "Resources": {
+        "WwwMongoServer1": {
+            "Type": "AWS::EC2::Instance",
+            "Metadata": {
+                "AWS::CloudFormation::Init": {
+                    "config": {
+                        "packages": {},
+                        "groups": {},
+                        "users": {},
+                        "sources": {},
+                        "files": {
+                            "/etc/resolv.conf": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "search ",
+                                            {
+                                                "Ref": "EnvironmentId"
+                                            },
+                                            ".",
+                                            {
+                                                "Ref": "DNSPublic"
+                                            },
+                                            " ",
+                                            {
+                                                "Ref": "EnvironmentId"
+                                            },
+                                            ".",
+                                            {
+                                                "Ref": "DNSPrivate"
+                                            },
+                                            "\n",
+                                            "nameserver 10.131.102.5",
+                                            "\n",
+                                            "nameserver 10.131.103.5",
+                                            "\n"
+                                        ]
+                                    ]
+                                },
+                                "mode": "000774",
+                                "owner": "root",
+                                "group": "root"
+                            },
+                            "/etc/cfn/cfn-hup.conf": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "[main]\n",
+                                            "stack=",
+                                            {
+                                                "Ref": "AWS::StackId"
+                                            },
+                                            "\n",
+                                            "region=",
+                                            {
+                                                "Ref": "AWS::Region"
+                                            },
+                                            "\n"
+                                        ]
+                                    ]
+                                },
+                                "mode": "000400",
+                                "owner": "root",
+                                "group": "root"
+                            },
+                            "/etc/cfn/hooks.d/cfn-auto-reloader.conf": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "[cfn-auto-reloader-hook]\n",
+                                            "triggers=post.update\n",
+                                            "path=Resources.WwwMongoServer1.Metadata.AWS::CloudFormation::Init\n",
+                                            "action=/usr/bin/cfn-init -v ",
+                                            "         --stack ",
+                                            {
+                                                "Ref": "AWS::StackName"
+                                            },
+                                            "         --resource WwwMongoServer1 ",
+                                            "         --region ",
+                                            {
+                                                "Ref": "AWS::Region"
+                                            },
+                                            "\n",
+                                            "runas=root\n"
+                                        ]
+                                    ]
+                                }
+                            },
+                            "/etc/yum.repos.d/mongodb-org-3.2.repo": {
+                                "source": {},
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "[mongodb-org-3.2]\n",
+                                            "name=MongoDB Repository\n",
+                                            "baseurl=https://repo.mongodb.org/yum/amazon/2013.03/mongodb-org/3.2/x86_64/\n",
+                                            "gpgcheck=0\n",
+                                            "enabled=1\n"
+                                        ]
+                                    ]
+                                }
+                            },
+                            "/home/ec2-user/mongo.sh": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "#sitecore.mongo.setup.sh"
+                                        ]
+                                    ]
+                                },
+                                "mode": "000775",
+                                "owner": "root",
+                                "group": "root"
+                            },
+                            "/home/ec2-user/mongo.js": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "#mongo.js"
+                                        ]
+                                    ]
+                                },
+                                "mode": "000775",
+                                "owner": "root",
+                                "group": "root"
+                            }
+                        },
+                        "commands": {
+                            "a-mongo": {
+                                "command": "bash --login -i /home/ec2-user/mongo.sh"
+                            },
+                            "b-mongo": {
+                                "command": "mongo localhost:27017/test /home/ec2-user/mongo.js"
+                            }
+                        },
+                        "services": {}
+                    }
+                }
+            },
+            "Properties": {
+                "InstanceType": {
+                    "Ref": "InstanceType"
+                },
+                "ImageId": {
+                    "Ref": "AMIwwwmdb"
+                },
+                "KeyName": {
+                    "Ref": "KeyName"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join": [
+                                ".",
+                                [
+                                    "mongo1-www",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    {
+                                        "Ref": "DNSPrivate"
+                                    }
+                                ]
+                            ]
+                        }
+                    }
+                ],
+                "NetworkInterfaces": [
+                    {
+                        "AssociatePublicIpAddress": "true",
+                        "DeviceIndex": "0",
+                        "SubnetId": {
+                            "Ref": "DataSubnetA"
+                        },
+                        "GroupSet": [
+                            {
+                                "Ref": "SGwwwdata"
+                            },
+                            "sg-8ef78feb",
+                            "sg-86f78fe3",
+                            "sg-8cf78fe9"
+                        ]
+                    }
+                ],
+                "UserData": {
+                    "Fn::Base64": {
+                        "Fn::Join": [
+                            "",
+                            [
+                                "#!/bin/bash -xe\n",
+                                "# Install the files and packages from the metadata\n",
+                                "/usr/bin/cfn-init -v ",
+                                "         --stack ",
+                                {
+                                    "Ref": "AWS::StackName"
+                                },
+                                "         --resource WwwMongoServer1 ",
+                                "         --region ",
+                                {
+                                    "Ref": "AWS::Region"
+                                },
+                                "\n"
+                            ]
+                        ]
+                    }
+                }
+            }
+        },
+        "WwwMongoServer2": {
+            "Type": "AWS::EC2::Instance",
+            "Metadata": {
+                "AWS::CloudFormation::Init": {
+                    "config": {
+                        "packages": {},
+                        "groups": {},
+                        "users": {},
+                        "sources": {},
+                        "files": {
+                            "/etc/resolv.conf": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "search ",
+                                            {
+                                                "Ref": "EnvironmentId"
+                                            },
+                                            ".",
+                                            {
+                                                "Ref": "DNSPublic"
+                                            },
+                                            " ",
+                                            {
+                                                "Ref": "EnvironmentId"
+                                            },
+                                            ".",
+                                            {
+                                                "Ref": "DNSPrivate"
+                                            },
+                                            "\n",
+                                            "nameserver 10.131.102.5",
+                                            "\n",
+                                            "nameserver 10.131.103.5",
+                                            "\n"
+                                        ]
+                                    ]
+                                },
+                                "mode": "000774",
+                                "owner": "root",
+                                "group": "root"
+                            },
+                            "/etc/cfn/cfn-hup.conf": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "[main]\n",
+                                            "stack=",
+                                            {
+                                                "Ref": "AWS::StackId"
+                                            },
+                                            "\n",
+                                            "region=",
+                                            {
+                                                "Ref": "AWS::Region"
+                                            },
+                                            "\n"
+                                        ]
+                                    ]
+                                },
+                                "mode": "000400",
+                                "owner": "root",
+                                "group": "root"
+                            },
+                            "/etc/cfn/hooks.d/cfn-auto-reloader.conf": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "[cfn-auto-reloader-hook]\n",
+                                            "triggers=post.update\n",
+                                            "path=Resources.WwwMongoServer2.Metadata.AWS::CloudFormation::Init\n",
+                                            "action=/usr/bin/cfn-init -v ",
+                                            "         --stack ",
+                                            {
+                                                "Ref": "AWS::StackName"
+                                            },
+                                            "         --resource WwwMongoServer2 ",
+                                            "         --region ",
+                                            {
+                                                "Ref": "AWS::Region"
+                                            },
+                                            "\n",
+                                            "runas=root\n"
+                                        ]
+                                    ]
+                                }
+                            },
+                            "/etc/yum.repos.d/mongodb-org-3.2.repo": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "[mongodb-org-3.2]\n",
+                                            "name=MongoDB Repository\n",
+                                            "baseurl=https://repo.mongodb.org/yum/amazon/2013.03/mongodb-org/3.2/x86_64/\n",
+                                            "gpgcheck=0\n",
+                                            "enabled=1\n"
+                                        ]
+                                    ]
+                                }
+                            },
+                            "/home/ec2-user/mongo.sh": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "#sitecore.mongo.setup.sh"
+                                        ]
+                                    ]
+                                },
+                                "mode": "000775",
+                                "owner": "root",
+                                "group": "root"
+                            }
+                        },
+                        "commands": {
+                            "a-mongo": {
+                                "command": "bash --login -i /home/ec2-user/mongo.sh"
+                            }
+                        },
+                        "services": {}
+                    }
+                }
+            },
+            "Properties": {
+                "InstanceType": {
+                    "Ref": "InstanceType"
+                },
+                "ImageId": {
+                    "Ref": "AMIwwwmdb"
+                },
+                "KeyName": {
+                    "Ref": "KeyName"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join": [
+                                ".",
+                                [
+                                    "mongo2-www",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    {
+                                        "Ref": "DNSPrivate"
+                                    }
+                                ]
+                            ]
+                        }
+                    }
+                ],
+                "NetworkInterfaces": [
+                    {
+                        "AssociatePublicIpAddress": "true",
+                        "DeviceIndex": "0",
+                        "SubnetId": {
+                            "Ref": "DataSubnetB"
+                        },
+                        "GroupSet": [
+                            {
+                                "Ref": "SGwwwdata"
+                            },
+                            "sg-8ef78feb",
+                            "sg-86f78fe3",
+                            "sg-8cf78fe9"
+                        ]
+                    }
+                ],
+                "UserData": {
+                    "Fn::Base64": {
+                        "Fn::Join": [
+                            "",
+                            [
+                                "#!/bin/bash -xe\n",
+                                "# Install the files and packages from the metadata\n",
+                                "/usr/bin/cfn-init -v ",
+                                "         --stack ",
+                                {
+                                    "Ref": "AWS::StackName"
+                                },
+                                "         --resource WwwMongoServer2 ",
+                                "         --region ",
+                                {
+                                    "Ref": "AWS::Region"
+                                },
+                                "\n"
+                            ]
+                        ]
+                    }
+                }
+            }
+        },
+        "WwwMongoServer3": {
+            "Type": "AWS::EC2::Instance",
+            "Metadata": {
+                "AWS::CloudFormation::Init": {
+                    "config": {
+                        "packages": {},
+                        "groups": {},
+                        "users": {},
+                        "sources": {},
+                        "files": {
+                            "/etc/resolv.conf": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "search ",
+                                            {
+                                                "Ref": "EnvironmentId"
+                                            },
+                                            ".",
+                                            {
+                                                "Ref": "DNSPublic"
+                                            },
+                                            " ",
+                                            {
+                                                "Ref": "EnvironmentId"
+                                            },
+                                            ".",
+                                            {
+                                                "Ref": "DNSPrivate"
+                                            },
+                                            "\n",
+                                            "nameserver 10.131.102.5",
+                                            "\n",
+                                            "nameserver 10.131.103.5",
+                                            "\n"
+                                        ]
+                                    ]
+                                },
+                                "mode": "000774",
+                                "owner": "root",
+                                "group": "root"
+                            },
+                            "/etc/cfn/cfn-hup.conf": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "[main]\n",
+                                            "stack=",
+                                            {
+                                                "Ref": "AWS::StackId"
+                                            },
+                                            "\n",
+                                            "region=",
+                                            {
+                                                "Ref": "AWS::Region"
+                                            },
+                                            "\n"
+                                        ]
+                                    ]
+                                },
+                                "mode": "000400",
+                                "owner": "root",
+                                "group": "root"
+                            },
+                            "/etc/cfn/hooks.d/cfn-auto-reloader.conf": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "[cfn-auto-reloader-hook]\n",
+                                            "triggers=post.update\n",
+                                            "path=Resources.WwwMongoServer3.Metadata.AWS::CloudFormation::Init\n",
+                                            "action=/usr/bin/cfn-init -v ",
+                                            "         --stack ",
+                                            {
+                                                "Ref": "AWS::StackName"
+                                            },
+                                            "         --resource WwwMongoServer3 ",
+                                            "         --region ",
+                                            {
+                                                "Ref": "AWS::Region"
+                                            },
+                                            "\n",
+                                            "runas=root\n"
+                                        ]
+                                    ]
+                                }
+                            },
+                            "/etc/yum.repos.d/mongodb-org-3.2.repo": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "[mongodb-org-3.2]\n",
+                                            "name=MongoDB Repository\n",
+                                            "baseurl=https://repo.mongodb.org/yum/amazon/2013.03/mongodb-org/3.2/x86_64/\n",
+                                            "gpgcheck=0\n",
+                                            "enabled=1\n"
+                                        ]
+                                    ]
+                                }
+                            },
+                            "/home/ec2-user/mongo.sh": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "#sitecore.mongo.setup.sh"
+                                        ]
+                                    ]
+                                },
+                                "mode": "000775",
+                                "owner": "root",
+                                "group": "root"
+                            }
+                        },
+                        "commands": {
+                            "a-mongo": {
+                                "command": "bash --login -i /home/ec2-user/mongo.sh"
+                            }
+                        },
+                        "services": {}
+                    }
+                }
+            },
+            "Properties": {
+                "InstanceType": {
+                    "Ref": "InstanceType"
+                },
+                "ImageId": {
+                    "Ref": "AMIwwwmdb"
+                },
+                "KeyName": {
+                    "Ref": "KeyName"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join": [
+                                ".",
+                                [
+                                    "mongo3-www",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    {
+                                        "Ref": "DNSPrivate"
+                                    }
+                                ]
+                            ]
+                        }
+                    }
+                ],
+                "NetworkInterfaces": [
+                    {
+                        "AssociatePublicIpAddress": "true",
+                        "DeviceIndex": "0",
+                        "SubnetId": {
+                            "Ref": "DataSubnetB"
+                        },
+                        "GroupSet": [
+                            {
+                                "Ref": "SGwwwdata"
+                            },
+                            "sg-8ef78feb",
+                            "sg-86f78fe3",
+                            "sg-8cf78fe9"
+                        ]
+                    }
+                ],
+                "UserData": {
+                    "Fn::Base64": {
+                        "Fn::Join": [
+                            "",
+                            [
+                                "#!/bin/bash -xe\n",
+                                "# Install the files and packages from the metadata\n",
+                                "/usr/bin/cfn-init -v ",
+                                "         --stack ",
+                                {
+                                    "Ref": "AWS::StackName"
+                                },
+                                "         --resource WwwMongoServer3 ",
+                                "         --region ",
+                                {
+                                    "Ref": "AWS::Region"
+                                },
+                                "\n"
+                            ]
+                        ]
+                    }
+                }
+            }
+        }
+    }
+}

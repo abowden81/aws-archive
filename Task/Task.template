@@ -1,0 +1,337 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Create Task Server from AMI",
+    "Parameters": {
+        "AMITask1": {
+            "Description": "The image for Tasks Server",
+            "Type": "String",
+            "Default": "ami-3f645d5c",
+            "ConstraintDescription": "Must be a valid AMI"
+        }
+    },
+    "Resources": {
+        "TaskServer": {
+            "Type": "AWS::EC2::Instance",
+            "Metadata": {
+                "AWS::CloudFormation::Init": {
+                    "configSets": {
+                        "default": [
+                            "init-config",
+                            "octopus-config",
+                            "transformation-config",
+                            "windows-account-config",
+                            "hipchat-notification"
+                        ]
+                    },
+                    "init-config": {
+                        "packages": {},
+                        "groups": {},
+                        "users": {},
+                        "sources": {},
+                        "files": {
+                            "c:\\cfn\\cfn-hup.conf": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "[main]\n",
+                                            "stack=",
+                                            {
+                                                "Ref": "AWS::StackId"
+                                            },
+                                            "\n",
+                                            "region=",
+                                            {
+                                                "Ref": "AWS::Region"
+                                            },
+                                            "\n"
+                                        ]
+                                    ]
+                                }
+                            },
+                            "c:\\cfn\\hooks.d\\cfn-auto-reloader.conf": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "[cfn-auto-reloader-hook]\n",
+                                            "triggers=post.update\n",
+                                            "path=Resources.TaskServer.Metadata.AWS::CloudFormation::Init\n",
+                                            "action=cfn-init.exe -v -s ",
+                                            {
+                                                "Ref": "AWS::StackId"
+                                            },
+                                            " -r TaskServer",
+                                            " --region ",
+                                            {
+                                                "Ref": "AWS::Region"
+                                            },
+                                            "\n"
+                                        ]
+                                    ]
+                                }
+                            },
+                            "D:\\renamecomputer.ps1": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "#renamecomputer.ps1"
+                                        ]
+                                    ]
+                                }
+                            }
+                        },
+                        "commands": {
+                            "renamecomputer": {
+                                "command": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "powershell.exe -executionpolicy unrestricted -command D:\\renamecomputer.ps1"
+                                        ]
+                                    ]
+                                }
+                            }
+                        },
+                        "services": {
+                            "windows": {
+                                "cfn-hup": {
+                                    "enabled": "true",
+                                    "ensureRunning": "true",
+                                    "files": [
+                                        "c:\\cfn\\cfn-hup.conf",
+                                        "c:\\cfn\\hooks.d\\cfn-auto-reloader.conf"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "octopus-config": {
+                        "packages": {},
+                        "groups": {},
+                        "users": {},
+                        "sources": {},
+                        "files": {
+                            "D:\\Installers\\Octopus.Tentacle.msi": {
+                                "source": "https://download.octopusdeploy.com/octopus/Octopus.Tentacle.3.5.1-x64.msi"
+                            },
+                            "D:\\install-tenacle.ps1": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "#install-tenacle.ps1"
+                                        ]
+                                    ]
+                                }
+                            }
+                        },
+                        "commands": {
+                            "0-install-tentacle": {
+                                "command": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "powershell.exe -executionpolicy unrestricted -command D:\\install-tenacle.ps1 'task' tasks ",
+                                            {
+                                                "Ref": "EnvironmentId"
+                                            },
+                                            ".",
+                                            {
+                                                "Ref": "EnvironmentGroup"
+                                            }
+                                        ]
+                                    ]
+                                }
+                            }
+                        },
+                        "services": {}
+                    },
+                    "transformation-config": {
+                        "packages": {},
+                        "groups": {},
+                        "users": {},
+                        "sources": {},
+                        "files": {
+                            "D:\\transformation.ps1": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "#transformation.ps1"
+                                        ]
+                                    ]
+                                }
+                            }
+                        },
+                        "commands": {
+                            "0-transformation": {
+                                "command": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "powershell.exe -executionpolicy unrestricted -command D:\\transformation.ps1 00.dev ",
+                                            {
+                                                "Ref": "EnvironmentId"
+                                            },
+                                            ".",
+                                            {
+                                                "Ref": "EnvironmentGroup"
+                                            }
+                                        ]
+                                    ]
+                                }
+                            }							
+                        },
+                        "services": {}
+                    },
+                    "windows-account-config": {
+                        "packages": {},
+                        "groups": {},
+                        "users": {},
+                        "sources": {},
+                        "files": {
+                            "D:\\CreateLocalUser.ps1": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "#CreateLocalUser.ps1"
+                                        ]
+                                    ]
+                                }
+                            }
+                        },
+                        "commands": {
+                            "0-create-account": {
+                                "command": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "powershell.exe -executionpolicy unrestricted -command D:\\CreateLocalUser.ps1 -environment ",
+                                            {
+                                                "Ref": "EnvironmentId"
+                                            },
+                                            ".",
+                                            {
+                                                "Ref": "EnvironmentGroup"
+                                            }
+                                        ]
+                                    ]
+                                }
+                            }
+                        },
+                        "services": {}
+                    },
+                    "hipchat-notification": {
+                        "packages": {},
+                        "groups": {},
+                        "users": {},
+                        "sources": {},
+                        "files": {
+                            "D:\\hipchat.ps1": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "#hipchat.ps1"
+                                        ]
+                                    ]
+                                }
+                            }
+                        },
+                        "commands": {
+                            "0-send-message": {
+                                "command": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "powershell.exe -executionpolicy unrestricted -command D:\\hipchat.ps1 '1VfshIqNRh5CTwwwtgDSDzEg4rzcM3TuGvvyIryO' 'Deployment' ' finished running CF-INT' 'TASKS' ",
+                                            {
+                                                "Ref": "EnvironmentId"
+                                            },
+                                            ".",
+                                            {
+                                                "Ref": "EnvironmentGroup"
+                                            }
+                                        ]
+                                    ]
+                                }
+                            }
+                        },
+                        "services": {}
+                    }
+                }
+            },
+            "Properties": {
+                "InstanceType": {
+                    "Ref": "InstanceType"
+                },
+                "ImageId": {
+                    "Ref": "AMITask1"
+                },
+                "KeyName": {
+                    "Ref": "KeyName"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join": [
+                                ".",
+                                [
+                                    "tasks",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    {
+                                        "Ref": "DNSPrivate"
+                                    }
+                                ]
+                            ]
+                        }
+                    }
+                ],
+                "NetworkInterfaces": [
+                    {
+                        "AssociatePublicIpAddress": "false",
+                        "DeviceIndex": "0",
+                        "SubnetId": {
+                            "Ref": "AppSubnetA"
+                        },
+                        "GroupSet": [
+                            {
+                                "Ref": "SGbslapp"
+                            },
+                            "sg-8ef78feb",
+                            "sg-86f78fe3",
+                            "sg-8cf78fe9"
+                        ]
+                    }
+                ],
+                "UserData": {
+                    "Fn::Base64": {
+                        "Fn::Join": [
+                            "",
+                            [
+                                "<script>\n",
+                                "cfn-init.exe -v -s ",
+                                {
+                                    "Ref": "AWS::StackId"
+                                },
+                                " -r TaskServer",
+                                " --region ",
+                                {
+                                    "Ref": "AWS::Region"
+                                },
+                                "\n",
+                                "</script>"
+                            ]
+                        ]
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,557 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Create BSL and Web Stack from AMI",
+    "Parameters": {
+        "AMIMongo0": {
+            "Description": "The image for Mongo0 Server",
+            "Type": "String",
+            "Default": "ami-b0665fd3",
+            "ConstraintDescription": "Must be a valid AMI"
+        },
+        "AMIMongo1": {
+            "Description": "The image for Mongo1 Server",
+            "Type": "String",
+            "Default": "ami-46645d25",
+            "ConstraintDescription": "Must be a valid AMI"
+        },
+        "AMIMongo2": {
+            "Description": "The image for Mongo2 Server",
+            "Type": "String",
+            "Default": "ami-26596045",
+            "ConstraintDescription": "Must be a valid AMI"
+        }
+    },
+    "Resources": {
+        "MongoServer0": {
+            "Type": "AWS::EC2::Instance",
+            "Metadata": {
+                   "AWS::CloudFormation::Init": {
+					"configSets": {
+                        "default": [
+                            "init-config",
+                            "cleanup-config"
+                        ]
+                    },
+                    "init-config": {
+                              "packages": {},
+                        "groups": {},
+                        "users": {},
+                        "sources": {},
+                        "files": {
+                            "/etc/resolv.conf": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "search ",
+                                            {
+                                                "Ref": "EnvironmentId"
+                                            },
+                                            ".",
+                                            {
+                                                "Ref": "DNSPublic"
+                                            },
+                                            " ",
+                                            {
+                                                "Ref": "EnvironmentId"
+                                            },
+                                            ".",
+                                            {
+                                                "Ref": "DNSPrivate"
+                                            },
+                                            "\n",
+                                            "nameserver 10.131.102.5",
+                                            "\n",
+                                            "nameserver 10.131.103.5",
+                                            "\n"
+                                        ]
+                                    ]
+                                },
+                                "mode": "000774",
+                                "owner": "root",
+                                "group": "root"
+                            },
+                            "/etc/cfn/cfn-hup.conf": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "[main]\n",
+                                            "stack=",
+                                            {
+                                                "Ref": "AWS::StackId"
+                                            },
+                                            "\n",
+                                            "region=",
+                                            {
+                                                "Ref": "AWS::Region"
+                                            },
+                                            "\n"
+                                        ]
+                                    ]
+                                },
+                                "mode": "000400",
+                                "owner": "root",
+                                "group": "root"
+                            },
+                            "/etc/cfn/hooks.d/cfn-auto-reloader.conf": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "[cfn-auto-reloader-hook]\n",
+                                            "triggers=post.update\n",
+                                            "path=Resources.MongoServer0.Metadata.AWS::CloudFormation::Init\n",
+                                            "action=/usr/bin/cfn-init -v ",
+                                            "         --stack ",
+                                            {
+                                                "Ref": "AWS::StackName"
+                                            },
+                                            "         --resource MongoServer0 ",
+                                            "         --region ",
+                                            {
+                                                "Ref": "AWS::Region"
+                                            },
+                                            "\n",
+                                            "runas=root\n"
+                                        ]
+                                    ]
+                                }
+                            }
+                        },
+                        "commands": {},
+                        "services": {}
+                    },
+                    "cleanup-config": {
+                        "packages": {},
+                        "groups": {},
+                        "users": {},
+                        "sources": {},
+                        "files": {                            			                           
+                            "/home/ec2-user/bls.cleanup.mongo.js": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "#mongo.js"
+                                        ]
+                                    ]
+                                },
+                                "mode": "000775",
+                                "owner": "root",
+                                "group": "root"
+                            }
+                        },
+                        "commands": {
+                            "a-mongo": {
+                                "command": "mongo localhost:27017/test /home/ec2-user/mongo.js"
+                            }
+                        },
+                        "services": {}
+                    }                                                       								
+                }
+            },
+            "Properties": {
+                "InstanceType": {
+                    "Ref": "InstanceType"
+                },
+                "ImageId": {
+                    "Ref": "AMIMongo0"
+                },
+                "KeyName": {
+                    "Ref": "KeyName"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join": [
+                                ".",
+                                [
+                                    "mongo-0",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    {
+                                        "Ref": "DNSPrivate"
+                                    }
+                                ]
+                            ]
+                        }
+                    }                  
+                ],
+                "NetworkInterfaces": [
+                    {
+                        "AssociatePublicIpAddress": "false",
+                        "DeviceIndex": "0",
+                        "SubnetId": {
+                            "Ref": "DataSubnetA"
+                        },
+                        "GroupSet": [
+                            {
+                                "Ref": "SGbsldata"
+                            },
+                            "sg-8ef78feb",
+                            "sg-86f78fe3",
+                            "sg-8cf78fe9"
+                        ]
+                    }
+                ],
+                "UserData": {
+                    "Fn::Base64": {
+                        "Fn::Join": [
+                            "",
+                            [
+                                "#!/bin/bash -xe\n",
+                                "# Install the files and packages from the metadata\n",
+                                "/usr/bin/cfn-init -v ",
+                                "         --stack ",
+                                {
+                                    "Ref": "AWS::StackName"
+                                },
+                                "         --resource MongoServer0 ",
+                                "         --region ",
+                                {
+                                    "Ref": "AWS::Region"
+                                },
+                                "\n"
+                            ]
+                        ]
+                    }
+                }
+            }
+        },
+        "MongoServer1": {
+            "Type": "AWS::EC2::Instance",
+            "Metadata": {
+                "AWS::CloudFormation::Init": {
+                    "config": {
+                        "packages": {},
+                        "groups": {},
+                        "users": {},
+                        "sources": {},
+                        "files": {
+                            "/etc/resolv.conf": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "search ",
+                                            {
+                                                "Ref": "EnvironmentId"
+                                            },
+                                            ".",
+                                            {
+                                                "Ref": "DNSPublic"
+                                            },
+                                            " ",
+                                            {
+                                                "Ref": "EnvironmentId"
+                                            },
+                                            ".",
+                                            {
+                                                "Ref": "DNSPrivate"
+                                            },
+                                            "\n",
+                                            "nameserver 10.131.102.5",
+                                            "\n",
+                                            "nameserver 10.131.103.5",
+                                            "\n"
+                                        ]
+                                    ]
+                                },
+                                "mode": "000774",
+                                "owner": "root",
+                                "group": "root"
+                            },
+                            "/etc/cfn/cfn-hup.conf": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "[main]\n",
+                                            "stack=",
+                                            {
+                                                "Ref": "AWS::StackId"
+                                            },
+                                            "\n",
+                                            "region=",
+                                            {
+                                                "Ref": "AWS::Region"
+                                            },
+                                            "\n"
+                                        ]
+                                    ]
+                                },
+                                "mode": "000400",
+                                "owner": "root",
+                                "group": "root"
+                            },
+                            "/etc/cfn/hooks.d/cfn-auto-reloader.conf": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "[cfn-auto-reloader-hook]\n",
+                                            "triggers=post.update\n",
+                                            "path=Resources.MongoServer1.Metadata.AWS::CloudFormation::Init\n",
+                                            "action=/usr/bin/cfn-init -v ",
+                                            "         --stack ",
+                                            {
+                                                "Ref": "AWS::StackName"
+                                            },
+                                            "         --resource MongoServer1 ",
+                                            "         --region ",
+                                            {
+                                                "Ref": "AWS::Region"
+                                            },
+                                            "\n",
+                                            "runas=root\n"
+                                        ]
+                                    ]
+                                }
+                            }
+                        },
+                        "commands": {},
+                        "services": {}
+                    }
+                }
+            },
+            "Properties": {
+                "InstanceType": {
+                    "Ref": "InstanceType"
+                },
+                "ImageId": {
+                    "Ref": "AMIMongo1"
+                },
+                "KeyName": {
+                    "Ref": "KeyName"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join": [
+                                ".",
+                                [
+                                    "mongo-1",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    {
+                                        "Ref": "DNSPrivate"
+                                    }
+                                ]
+                            ]
+                        }
+                    }                   
+                ],
+                "NetworkInterfaces": [
+                    {
+                        "AssociatePublicIpAddress": "false",
+                        "DeviceIndex": "0",
+                        "SubnetId": {
+                            "Ref": "DataSubnetA"
+                        },
+                        "GroupSet": [
+                            {
+                                "Ref": "SGbsldata"
+                            },
+                            "sg-8ef78feb",
+                            "sg-86f78fe3",
+                            "sg-8cf78fe9"
+                        ]
+                    }
+                ],
+                "UserData": {
+                    "Fn::Base64": {
+                        "Fn::Join": [
+                            "",
+                            [
+                                "#!/bin/bash -xe\n",
+                                "# Install the files and packages from the metadata\n",
+                                "/usr/bin/cfn-init -v ",
+                                "         --stack ",
+                                {
+                                    "Ref": "AWS::StackName"
+                                },
+                                "         --resource MongoServer1 ",
+                                "         --region ",
+                                {
+                                    "Ref": "AWS::Region"
+                                },
+                                "\n"
+                            ]
+                        ]
+                    }
+                }
+            }
+        },
+        "MongoServer2": {
+            "Type": "AWS::EC2::Instance",
+            "Metadata": {
+                "AWS::CloudFormation::Init": {
+                    "config": {
+                        "packages": {},
+                        "groups": {},
+                        "users": {},
+                        "sources": {},
+                        "files": {
+                            "/etc/resolv.conf": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "search ",
+                                            {
+                                                "Ref": "EnvironmentId"
+                                            },
+                                            ".",
+                                            {
+                                                "Ref": "DNSPublic"
+                                            },
+                                            " ",
+                                            {
+                                                "Ref": "EnvironmentId"
+                                            },
+                                            ".",
+                                            {
+                                                "Ref": "DNSPrivate"
+                                            },
+                                            "\n",
+                                            "nameserver 10.131.102.5",
+                                            "\n",
+                                            "nameserver 10.131.103.5",
+                                            "\n"
+                                        ]
+                                    ]
+                                },
+                                "mode": "000774",
+                                "owner": "root",
+                                "group": "root"
+                            },
+                            "/etc/cfn/cfn-hup.conf": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "[main]\n",
+                                            "stack=",
+                                            {
+                                                "Ref": "AWS::StackId"
+                                            },
+                                            "\n",
+                                            "region=",
+                                            {
+                                                "Ref": "AWS::Region"
+                                            },
+                                            "\n"
+                                        ]
+                                    ]
+                                },
+                                "mode": "000400",
+                                "owner": "root",
+                                "group": "root"
+                            },
+                            "/etc/cfn/hooks.d/cfn-auto-reloader.conf": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "[cfn-auto-reloader-hook]\n",
+                                            "triggers=post.update\n",
+                                            "path=Resources.MongoServer2.Metadata.AWS::CloudFormation::Init\n",
+                                            "action=/usr/bin/cfn-init -v ",
+                                            "         --stack ",
+                                            {
+                                                "Ref": "AWS::StackName"
+                                            },
+                                            "         --resource MongoServer2 ",
+                                            "         --region ",
+                                            {
+                                                "Ref": "AWS::Region"
+                                            },
+                                            "\n",
+                                            "runas=root\n"
+                                        ]
+                                    ]
+                                }
+                            }
+                        },
+                        "commands": {},
+                        "services": {}
+                    }
+                }
+            },
+            "Properties": {
+                "InstanceType": {
+                    "Ref": "InstanceType"
+                },
+                "ImageId": {
+                    "Ref": "AMIMongo2"
+                },
+                "KeyName": {
+                    "Ref": "KeyName"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join": [
+                                ".",
+                                [
+                                    "mongo-2",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    {
+                                        "Ref": "DNSPrivate"
+                                    }
+                                ]
+                            ]
+                        }
+                    }                   
+                ],
+                "NetworkInterfaces": [
+                    {
+                        "AssociatePublicIpAddress": "false",
+                        "DeviceIndex": "0",
+                        "SubnetId": {
+                            "Ref": "DataSubnetB"
+                        },
+                        "GroupSet": [
+                            {
+                                "Ref": "SGbsldata"
+                            },
+                            "sg-8ef78feb",
+                            "sg-86f78fe3",
+                            "sg-8cf78fe9"
+                        ]
+                    }
+                ],
+                "UserData": {
+                    "Fn::Base64": {
+                        "Fn::Join": [
+                            "",
+                            [
+                                "#!/bin/bash -xe\n",
+                                "# Install the files and packages from the metadata\n",
+                                "/usr/bin/cfn-init -v ",
+                                "         --stack ",
+                                {
+                                    "Ref": "AWS::StackName"
+                                },
+                                "         --resource MongoServer2 ",
+                                "         --region ",
+                                {
+                                    "Ref": "AWS::Region"
+                                },
+                                "\n"
+                            ]
+                        ]
+                    }
+                }
+            }
+        }
+    }
+}

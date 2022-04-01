@@ -1,0 +1,11 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Create BSL and Web Stack from AMI",
+    "Parameters": {
+        "Certificate": {
+            "Description": "The arn of the certificate",
+            "Type": "String",
+            "ConstraintDescription": "Must be a ARN"
+        }
+    }
+}

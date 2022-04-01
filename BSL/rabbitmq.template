@@ -1,0 +1,312 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Create RabbitMQ From AMI",
+    "Parameters": {
+        "AMIRabbitMQ0": {
+            "Description": "The image for RabbitMQ Server",
+            "Type": "String",
+            "Default": "ami-13645d70",
+            "ConstraintDescription": "Must be a valid AMI"
+        }
+    },
+    "Resources": {
+        "RabbitServer0": {
+            "Type": "AWS::EC2::Instance",
+            "Metadata": {
+                "AWS::CloudFormation::Init": {
+                    "configSets": {
+                        "default": [
+                            "init-config",
+                            "transformation-config",
+                            "bsl-user-config"
+                        ]
+                    },
+                    "init-config": {
+                        "packages": {},
+                        "groups": {},
+                        "users": {},
+                        "sources": {},
+                        "files": {
+                            "/etc/cfn/cfn-hup.conf": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "[main]\n",
+                                            "stack=",
+                                            {
+                                                "Ref": "AWS::StackId"
+                                            },
+                                            "\n",
+                                            "region=",
+                                            {
+                                                "Ref": "AWS::Region"
+                                            },
+                                            "\n"
+                                        ]
+                                    ]
+                                },
+                                "mode": "000400",
+                                "owner": "root",
+                                "group": "root"
+                            },
+                            "/etc/cfn/hooks.d/cfn-auto-reloader.conf": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "[cfn-auto-reloader-hook]\n",
+                                            "triggers=post.update\n",
+                                            "path=Resources.RabbitServer0.Metadata.AWS::CloudFormation::Init\n",
+                                            "action=/usr/bin/cfn-init -v ",
+                                            "         --stack ",
+                                            {
+                                                "Ref": "AWS::StackName"
+                                            },
+                                            "         --resource RabbitServer0 ",
+                                            "         --region ",
+                                            {
+                                                "Ref": "AWS::Region"
+                                            },
+                                            "\n",
+                                            "runas=root\n"
+                                        ]
+                                    ]
+                                }
+                            }
+                        },
+                        "commands": {},
+                        "services": {}
+                    },
+                    "transformation-config": {
+                        "packages": {},
+                        "groups": {},
+                        "users": {},
+                        "sources": {},
+                        "files": {
+                            "/etc/resolv.conf": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "search ",
+                                            {
+                                                "Ref": "EnvironmentId"
+                                            },
+                                            ".",
+                                            {
+                                                "Ref": "DNSPublic"
+                                            },
+                                            " ",
+                                            {
+                                                "Ref": "EnvironmentId"
+                                            },
+                                            ".",
+                                            {
+                                                "Ref": "DNSPrivate"
+                                            },
+                                            "\n",
+                                            "nameserver 10.131.102.5",
+                                            "\n",
+                                            "nameserver 10.131.103.5",
+                                            "\n"
+                                        ]
+                                    ]
+                                },
+                                "mode": "000774",
+                                "owner": "root",
+                                "group": "root"
+                            }
+                        },
+                        "commands": {},
+                        "services": {}
+                    },
+                    "bsl-user-config": {
+                        "packages": {},
+                        "groups": {},
+                        "users": {},
+                        "sources": {},
+                        "files": {
+                            "/home/ec2-user/rabbitmqinit.sh": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "#rabbitmqinit.sh"
+                                        ]
+                                    ]
+                                },
+                                "mode": "000774",
+                                "owner": "root",
+                                "group": "root"
+                            }
+                        },
+                        "commands": {
+                            "create-user": {
+                                "command": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "bash --login -i /home/ec2-user/rabbitmqinit.sh ",
+                                            {
+                                                "Ref": "EnvironmentId"
+                                            },
+                                            ".",
+                                            {
+                                                "Ref": "EnvironmentGroup"
+                                            }
+                                        ]
+                                    ]
+                                }
+                            }
+                        },
+                        "services": {}
+                    }
+                }
+            },
+            "Properties": {
+                "InstanceType": {
+                    "Ref": "InstanceType"
+                },
+                "ImageId": {
+                    "Ref": "AMIRabbitMQ0"
+                },
+                "KeyName": {
+                    "Ref": "KeyName"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join": [
+                                ".",
+                                [
+                                    "rabbitmq-0",
+                                    {
+                                        "Ref": "EnvironmentId"
+                                    },
+                                    {
+                                        "Ref": "DNSPrivate"
+                                    }
+                                ]
+                            ]
+                        }
+                    }                  
+                ],
+                "NetworkInterfaces": [
+                    {
+                        "AssociatePublicIpAddress": "false",
+                        "DeviceIndex": "0",
+                        "SubnetId": {
+                            "Ref": "AppSubnetA"
+                        },
+                        "GroupSet": [
+                            {
+                                "Ref": "SGbslapp"
+                            },
+                            "sg-8ef78feb",
+                            "sg-86f78fe3",
+                            "sg-8cf78fe9"
+                        ]
+                    }
+                ],
+                "UserData": {
+                    "Fn::Base64": {
+                        "Fn::Join": [
+                            "",
+                            [
+                                "#!/bin/bash -xe\n",
+                                "# Install the files and packages from the metadata\n",
+                                "/usr/bin/cfn-init -v ",
+                                "         --stack ",
+                                {
+                                    "Ref": "AWS::StackName"
+                                },
+                                "         --resource RabbitServer0 ",
+                                "         --region ",
+                                {
+                                    "Ref": "AWS::Region"
+                                },
+                                "\n"
+                            ]
+                        ]
+                    }
+                }
+            }
+        },
+        "rabbitelb": {
+            "Type": "AWS::ElasticLoadBalancing::LoadBalancer",
+            "Properties": {
+                "LoadBalancerName": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "AU",
+                            {
+                                "Ref": "EnvironmentGroup"
+                            },
+                            {
+                                "Ref": "EnvironmentId"
+                            },
+                            "rabbitelb"
+                        ]
+                    ]
+                },
+                "CrossZone": "true",
+                "ConnectionSettings": {
+                    "IdleTimeout": "10"
+                },
+                "Instances": [
+                    {
+                        "Ref": "RabbitServer0"
+                    }
+                ],
+                "Subnets": [
+                    {
+                        "Ref": "DmzSubnetB"
+                    }
+                ],
+                "SecurityGroups": [
+                    {
+                        "Ref": "SGbslapp"
+                    }
+                ],
+                "Listeners": [
+                    {
+                        "LoadBalancerPort": "25672",
+                        "Protocol": "TCP",
+                        "InstancePort": "25672",
+                        "InstanceProtocol": "TCP"
+                    },
+                    {
+                        "LoadBalancerPort": "15672",
+                        "Protocol": "TCP",
+                        "InstancePort": "15672",
+                        "InstanceProtocol": "TCP"
+                    },
+                    {
+                        "LoadBalancerPort": "5672",
+                        "Protocol": "TCP",
+                        "InstancePort": "5672",
+                        "InstanceProtocol": "TCP"
+                    }
+                ],
+                "HealthCheck": {
+                    "Target": "TCP:25672",
+                    "HealthyThreshold": "2",
+                    "UnhealthyThreshold": "5",
+                    "Interval": "5",
+                    "Timeout": "3"
+                },
+                "Tags": [
+                    {
+                        "Key": "Environment",
+                        "Value": {
+                            "Ref": "EnvironmentId"
+                        }
+                    }
+                ]
+            }
+        }
+    }
+}

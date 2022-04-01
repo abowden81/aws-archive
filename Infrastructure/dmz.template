@@ -1,0 +1,112 @@
+{
+    "AWSTemplateFormatVersion" : "2010-09-09",
+    "Description"              : "Create BSL and Web Stack from AMI",
+    "Parameters"               : {
+        "DmzSubnetA" : {
+            "Type" : "AWS::EC2::Subnet::Id",
+            "Default" : "subnet-e9b63c8c",
+            "ConstraintDescription" : ""
+        },
+        "DmzSubnetB" : {
+            "Type" : "AWS::EC2::Subnet::Id",
+            "Default" : "subnet-5cf4472b",
+            "ConstraintDescription" : ""
+        }
+    },
+    "Resources"                : {
+        "SGbsldmz" : {
+            "Type" : "AWS::EC2::SecurityGroup",
+            "Properties" : {
+                "GroupDescription" : "Enable HTTP HTTPS access",
+                "VpcId"            : {
+                    "Ref" : "DefaultVPC"
+                },
+                "Tags"             : [
+                    {
+                        "Key" : "Name",
+                        "Value" : {
+                            "Fn::Join" : [
+                                "",
+                                [
+                                    "SG",
+                                    {
+                                        "Ref" : "EnvironmentGroup"
+                                    },
+                                    "-",
+                                    {
+                                        "Ref" : "EnvironmentId"
+                                    },
+                                    "-",
+                                    "BSL",
+                                    "-",
+                                    "DMZ"
+                                ]
+                            ]
+                        }
+                    }
+                ],
+                "SecurityGroupIngress" : [
+                    {
+                        "IpProtocol" : "tcp",
+                        "FromPort"   : "80",
+                        "ToPort"     : "80",
+                        "CidrIp"     : "0.0.0.0/0"
+                    },
+                    {
+                        "IpProtocol" : "tcp",
+                        "FromPort"   : "443",
+                        "ToPort"     : "443",
+                        "CidrIp"     : "0.0.0.0/0"
+                    }
+                ]
+            }
+        },
+        "SGwwwdmz" : {
+            "Type" : "AWS::EC2::SecurityGroup",
+            "Properties" : {
+                "GroupDescription" : "Enable HTTP HTTPS access",
+                "VpcId"            : {
+                    "Ref" : "DefaultVPC"
+                },
+                "Tags"             : [
+                    {
+                        "Key" : "Name",
+                        "Value" : {
+                            "Fn::Join" : [
+                                "",
+                                [
+                                    "SG",
+                                    {
+                                        "Ref" : "EnvironmentGroup"
+                                    },
+                                    "-",
+                                    {
+                                        "Ref" : "EnvironmentId"
+                                    },
+                                    "-",
+                                    "WWW",
+                                    "-",
+                                    "DMZ"
+                                ]
+                            ]
+                        }
+                    }
+                ],
+                "SecurityGroupIngress" : [
+                    {
+                        "IpProtocol" : "tcp",
+                        "FromPort"   : "80",
+                        "ToPort"     : "80",
+                        "CidrIp"     : "0.0.0.0/0"
+                    },
+                    {
+                        "IpProtocol" : "tcp",
+                        "FromPort"   : "443",
+                        "ToPort"     : "443",
+                        "CidrIp"     : "0.0.0.0/0"
+                    }
+                ]
+            }
+        }
+    }
+}
